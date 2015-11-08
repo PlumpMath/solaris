@@ -1,0 +1,15 @@
+<CoordinateSystem> { Y-Up-Left }
+
+<Comment> {
+  "x2egg yellowsphere.x yellowsphere.egg"
+}
+<Group> Root {
+  <Transform> {
+    <Matrix4> {
+      1 0 0 0
+      0 0 1 0
+      0 1 0 0
+      0 0 0 1
+    }
+  }
+}
