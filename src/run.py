@@ -10,6 +10,8 @@ class Solaris(ShowBase):
 
     textures_folder = "textures/"
     models_folder = "models/"
+    audio_folder = "audio/"
+    image_folder = "img/"
 
     def __init__(self):
         ShowBase.__init__(self)
