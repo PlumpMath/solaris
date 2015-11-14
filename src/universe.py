@@ -3,81 +3,70 @@ from direct.task import Task
 
 from math import cos, sin, pi
 
-class Planet():
+class CelestialBody():
 
-    def __init__(self, app, name, model, texture=None, scale=1, distance_from_sun=0, speed_self=1, speed=1):
+    def __init__(self, app, solarsystem, name, model, texture=None, scale=1, rotating_around=None,
+                 distance_from_rotate_center=0, speed_self=0, speed=0, opt_pos=None):
         self.app = app
+        self.solarsystem = solarsystem
         self.name = name
         self.model = model
         self.texture = texture
         self.scale = scale
-        self.distance_from_sun = distance_from_sun
+        self.rotating_around = rotating_around
+        self.distance_from_rotate_center = distance_from_rotate_center
         self.speed_self = speed_self
         self.speed = speed
-        self.angle = self.speed * self.app.speed
-        self.rotation = self.speed * self.app.speed * self.speed_self
+        self.opt_pos = opt_pos
+        self.angle = self.speed * self.solarsystem.speed
+        self.rotation = self.speed * self.solarsystem.speed * self.speed_self
 
-    def create_planet(self):
-        self.planet = self.app.loader.loadModel(self.model)
-        if self.texture:
+    def create(self):
+        self.celestial_body = self.app.loader.loadModel(self.model)
+        if self.texture is not None:
             tex = self.app.loader.loadTexture(self.texture)
-            self.planet.setTexture(tex, 1)
+            self.celestial_body.setTexture(tex, 1)
         self.root = self.app.render.attachNewNode(self.name+'_root')
-        self.planet.setScale(self.scale, self.scale, self.scale)
-        self.planet.setPos(self.distance_from_sun, 0, 0)
-        self.planet.reparentTo(self.root)
+        if self.rotating_around is not None:
+            self.root.reparentTo(self.rotating_around.get_node())
+        self.celestial_body.setScale(self.scale, self.scale, self.scale)
+        if self.opt_pos is not None:
+            self.celestial_body.setPos(self.opt_pos[0], self.opt_pos[1], self.opt_pos[2])
+        else:
+            self.celestial_body.setPos(self.distance_from_rotate_center, 0, 0)
+        self.celestial_body.reparentTo(self.root)
         return self.app
 
-    def rotate_planet(self):
-        self.app.taskMgr.add(self.rotateTask, self.name+"RotateTask")
+    def rotate(self):
+        self.app.taskMgr.add(self.rotate_task, self.name+"_RotateTask")
 
-    def rotateTask(self, task):
-        if self.app.animRunning:
-            if self.distance_from_sun != 0:
-                self.angle = self.angle + (self.speed * self.app.speed/10)
+    def rotate_task(self, task):
+        if self.solarsystem.animRunning:
+            if self.speed != 0:
+                self.angle = self.angle + (self.speed * self.solarsystem.speed/10)
                 angleRadians = self.angle * (pi / 180.0)
-                self.planet.setPos(self.distance_from_sun * cos(angleRadians), (self.distance_from_sun+4) * sin(angleRadians), self.root.getZ())
-            self.rotation = self.rotation + (self.speed*self.app.speed/10*self.speed_self)
-            self.planet.setHpr(self.rotation, 0, 0)
+                self.celestial_body.setPos(self.distance_from_rotate_center * cos(angleRadians), (self.distance_from_rotate_center+2) * sin(angleRadians), self.root.getZ())
+            if self.speed_self != 0:
+                self.rotation = self.rotation + (self.speed*self.solarsystem.speed/10*self.speed_self)
+                self.celestial_body.setHpr(self.rotation, 0, 0)
         return Task.cont
 
-    def get_planet_node(self):
-        return self.planet
+    def get_node(self):
+        return self.celestial_body
 
-class Moon():
-    def __init__(self, app, planet, name, model, texture=None, scale=1, distance_from_planet=1):
-        self.app = app
-        self.planet = planet
-        self.name = name
-        self.model = model
-        self.texture = texture
-        self.scale = scale
-        self.distance_from_planet = distance_from_planet
-
-    def create_moon(self):
-        self.moon = self.app.loader.loadModel(self.model)
-        if self.texture:
+    def showTexture(self, bool):
+        if bool:
+            self.celestial_body.setTextureOff(1)
             tex = self.app.loader.loadTexture(self.texture)
-            self.moon.setTexture(tex, 1)
-        self.root = self.app.render.attachNewNode(self.name+'_root')
-        self.root.reparentTo(self.planet.get_planet_node())
-        self.moon.setScale(self.scale, self.scale, self.scale)
-        self.moon.setPos(self.distance_from_planet, 0, 0)
-        self.moon.reparentTo(self.root)
-        return self.app
+            self.celestial_body.setTexture(tex, 1)
+        else:
+            self.celestial_body.setTextureOff(1)
 
-    def rotate_moon(self):
-        self.app.taskMgr.add(self.rotateTask, self.name+"RotateTask")
+    def destroy(self):
+        self.app.ignoreAll()
+        self.app.taskMgr.remove(self.name+'_RotateTask')
+        self.celestial_body.remove()
 
-    def rotateTask(self, task):
-        angleDegrees = task.time * self.app.speed*8
-        angleRadians = angleDegrees * (pi / 180.0)
-        self.moon.setPos((self.distance_from_planet+0.3) * cos(angleRadians), (self.distance_from_planet+0.8) * sin(angleRadians), self.root.getZ())
-        self.moon.setHpr(task.time*self.app.speed*16, 0, 0)
-        return Task.cont
-
-    def get_moon_node(self):
-        return self.moon
 
 class Sky():
     def __init__(self, app, model, texture=None, scale=1):
@@ -95,3 +84,7 @@ class Sky():
         self.sky.setScale(self.scale, self.scale, self.scale)
         self.sky.setPos(0, 0, 0)
         return self.app
+
+    def destroy(self):
+        self.app.ignoreAll()
+        self.sky.remove()
