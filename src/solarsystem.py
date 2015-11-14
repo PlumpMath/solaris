@@ -2,6 +2,7 @@ from math import pi, sin, cos
 
 from direct.task import Task
 from panda3d.core import *
+from direct.gui.DirectGui import *
 
 from universe import Sky, CelestialBody
 
