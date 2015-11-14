@@ -29,10 +29,18 @@ class Menu:
 
         # Button Texture
         cm = CardMaker('OnscreenImage')
-        cm.setFrame(-6, 6, -1, 1.5)
+        cm.setFrame(-8, 8, -1, 1.5)
         self.buttonNorm = NodePath(cm.generate())
         self.buttonNorm.setTexture( self.app.loader.loadTexture(self.image_folder+"button.png") )
         self.buttonNorm.setTransparency(TransparencyAttrib.MAlpha)
+
+        self.buttonOff = NodePath(cm.generate())
+        self.buttonOff.setTexture( self.app.loader.loadTexture(self.image_folder+"button_red.png") )
+        self.buttonOff.setTransparency(TransparencyAttrib.MAlpha)
+
+        self.buttonOn = NodePath(cm.generate())
+        self.buttonOn.setTexture( self.app.loader.loadTexture(self.image_folder+"button_green.png") )
+        self.buttonOn.setTransparency(TransparencyAttrib.MAlpha)
 
     def set_sound(self):
         self.hover_sound = self.app.loader.loadSfx(self.audio_folder+"button_hover.mp3")
@@ -51,7 +59,7 @@ class Menu:
         self.card.setTexScale(TextureStage.getDefault(), self.tex.getTexScale())
 
     def set_static_background(self):
-        self.backgroundImage = OnscreenImage(image = self.textures_folder+"stars.jpg", pos = (0, 0, 0), scale=1.4)
+        self.backgroundImage = OnscreenImage(image = self.image_folder+"bg.jpg", pos = (0, 0, 0), scale=2)
 
     def create_main_menu(self):
         self.textHeader = OnscreenImage(image=self.image_folder+"solaris.png", pos=(0,0,0.6), scale=(0.6,0,0.15))
@@ -88,20 +96,22 @@ class Menu:
     def create_options_menu(self):
         self.textHeader = OnscreenImage(image=self.image_folder+"options.png", pos=(0,0,0.6), scale=(0.6,0,0.15))
         self.textHeader.setTransparency(1)
-        self.buttonSound = DirectButton(pos = Vec3(0,0,.2), text = "Sounds",
+        self.buttonSound = DirectButton(pos = Vec3(0,0,.2), text = "Toggle Sounds",
                    scale = .1, relief=None,
                    rolloverSound = None, clickSound = None,
                    command = self.toggleSound, geom=(self.buttonNorm))
-        self.labelSound = DirectLabel(pos = Vec3(.8,0,.19), text = "Off",
-                   scale = .12, pad = (.5, .5), frameColor=self.getColor(self.sound))
-        self.labelSound["text"] = self.getText(self.sound)
-        self.buttonAnimBackground = DirectButton(pos = Vec3(0,0,-.2), text = "Animated Background",
+        if self.sound:
+            self.buttonSound['geom'] = self.buttonOn
+        else:
+            self.buttonSound['geom'] = self.buttonOff
+        self.buttonAnimBackground = DirectButton(pos = Vec3(0,0,-.2), text = "Toggle Animated Background",
                    scale = .1, relief=None,
                    rolloverSound = None, clickSound = None,
                    command = self.toggleAnimBackground, geom=(self.buttonNorm))
-        self.labelAnimBackground = DirectLabel(pos = Vec3(.8,0,-.21), text = "Off",
-                   scale = .12, pad = (.5, .5), frameColor=self.getColor(self.animBackground))
-        self.labelAnimBackground["text"] = self.getText(self.animBackground)
+        if self.animBackground:
+            self.buttonAnimBackground['geom'] = self.buttonOn
+        else:
+            self.buttonAnimBackground['geom'] = self.buttonOff
         self.buttonSave = DirectButton(pos = Vec3(0,0,-.6), text = "Save",
                    scale = .1, relief=None,
                    rolloverSound = None, clickSound = None,
@@ -118,21 +128,13 @@ class Menu:
         self.buttonSound.destroy()
         self.buttonAnimBackground.destroy()
         self.buttonSave.destroy()
-        self.labelSound.destroy()
-        self.labelAnimBackground.destroy()
         self.textHeader.destroy()
 
     def getText(self, boolValue):
-        if boolValue:
+        if not boolValue:
             return "On"
         else:
             return "Off"
-
-    def getColor(self, boolValue):
-        if boolValue:
-            return (0,1,0,1)
-        else:
-            return (1,0,0,1)
 
     def startSimulation(self):
         self.destroy_main_menu()
@@ -153,9 +155,8 @@ class Menu:
 
     def toggleSound(self):
         self.sound = not self.sound
-        self.labelSound["frameColor"] = self.getColor(self.sound)
-        self.labelSound["text"] = self.getText(self.sound)
         if self.sound:
+            self.buttonSound['geom'] = self.buttonOn
             self.bg_sound.play()
             self.click_sound.play()
             self.buttonSound['clickSound']=self.click_sound
@@ -165,6 +166,7 @@ class Menu:
             self.buttonAnimBackground['rolloverSound']=self.hover_sound
             self.buttonSave['rolloverSound']=self.hover_sound
         else:
+            self.buttonSound['geom'] = self.buttonOff
             self.bg_sound.stop()
             self.buttonSound['clickSound']=None
             self.buttonAnimBackground['clickSound']=None
@@ -175,8 +177,10 @@ class Menu:
 
     def toggleAnimBackground(self):
         self.animBackground = not self.animBackground
-        self.labelAnimBackground["frameColor"] = self.getColor(self.animBackground)
-        self.labelAnimBackground["text"] = self.getText(self.animBackground)
+        if self.animBackground:
+            self.buttonAnimBackground['geom'] = self.buttonOn
+        else:
+            self.buttonAnimBackground['geom'] = self.buttonOff
         if self.animBackground:
             self.backgroundImage.destroy()
             self.set_animated_background()
