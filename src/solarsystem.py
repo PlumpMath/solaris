@@ -136,8 +136,6 @@ class Solarsystem:
                     value.get_node().setLight(self.pointNodes[self.planets[key]['sun']])
                 except:
                     value.get_node().setLight(self.pointNodes[self.planets[self.moons[key]['planet']]['sun']])
-            else:
-                value.get_node().clearLight(self.ambNode)
 
     def removeLight(self):
         for key, value in self.nodes.items():
@@ -150,8 +148,6 @@ class Solarsystem:
                     value.get_node().clearLight(self.pointNodes[self.planets[key]['sun']])
                 except:
                     value.get_node().clearLight(self.pointNodes[self.planets[self.moons[key]['planet']]['sun']])
-            else:
-                value.get_node().setLight(self.ambNode)
 
     def destroy_solarsystem(self):
         self.app.ignoreAll()
