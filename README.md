@@ -6,6 +6,3 @@ Ziel dieses Projektes ist es, eine 3D Simulation eines Sonnensystems zu erstelle
 ##Team
 * Selina Brinnich
 * Niklas Hohenwarter
-
-##Zeitaufzeichnung
-[Hier gehts zur Zeitaufzeichnung](https://goo.gl/8DslUf)
