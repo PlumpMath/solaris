@@ -2,6 +2,7 @@ from math import pi, sin, cos
 
 from direct.task import Task
 from panda3d.core import *
+from panda3d.core import TextNode
 from direct.gui.DirectGui import *
 
 from universe import Sky, CelestialBody
@@ -14,6 +15,7 @@ class Solarsystem:
     animRunning = True
     textures = True
     light = True
+    help = []
 
     suns = {
         "Sun": {"texture": "sun.jpg", "scale": 20, "speed_self": 10, "speed": 0, "pos": (0,0,0)}
@@ -97,6 +99,10 @@ class Solarsystem:
         self.app.accept("space", self.stopPlaySimulation)
         self.app.accept("t", self.toggleTextures)
         self.app.accept("l", self.toggleLight)
+        self.app.accept("h", self.showHelp)
+        self.app.accept("h-up", self.removeHelp)
+
+        self.helpText = self.generateOnscreenText("[H] Show Help", 1)
 
         # Kamera setzen
         #self.trackball.node().setPos(0,40,0)
@@ -149,11 +155,30 @@ class Solarsystem:
                 except:
                     value.get_node().clearLight(self.pointNodes[self.planets[self.moons[key]['planet']]['sun']])
 
+    def generateOnscreenText(self, text, i):
+        return OnscreenText(text = text, pos = (-1.3, .95-.08*i), fg=(1,1,1,1),
+                       align = TextNode.ALeft, scale = .08, mayChange = 1)
+
+    def showHelp(self):
+        self.help.append(self.generateOnscreenText("[L] Toggle Light", 2))
+        self.help.append(self.generateOnscreenText("[T] Toggle Textures", 3))
+        self.help.append(self.generateOnscreenText("[Space] Stop Simulation", 4))
+        self.help.append(self.generateOnscreenText("[-] Slower", 5))
+        self.help.append(self.generateOnscreenText("[+] Faster", 6))
+        self.help.append(self.generateOnscreenText("[Left Mouse] Move", 7))
+        self.help.append(self.generateOnscreenText("[Right Mouse] Drag to zoom", 8))
+
+    def removeHelp(self):
+        for x in self.help:
+            x.destroy()
+
     def destroy_solarsystem(self):
         self.app.ignoreAll()
         self.sky.destroy()
         for n in self.nodes.values():
             n.destroy()
+        self.removeHelp()
+        self.helpText.destroy()
 
     def backToMainMenu(self):
         self.destroy_solarsystem()
